@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import shortid from 'shortid';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -11,35 +11,22 @@ import {
 import { ContactForm } from 'components/ContactForm/ContactForm';
 import { Filter } from 'components/Filter/Filter';
 import { ContactList } from 'components/ContactList/ContactList';
+import { useLocalStorage } from './hooks/useLocalStorage';
 
 
-export class App extends Component {
-  state = {
-    contacts: [
-      { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
-      { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
-      { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
-      { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
-    ],
-    filter: '',
-  };
+export const App = () => {
+  const initialContacts = [
+    { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
+    { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
+    { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
+    { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
+  ];
 
-  componentDidMount() {
-    const myContacts = JSON.parse(localStorage.getItem('contacts'));
-    if (myContacts) {
-      this.setState({ contacts: myContacts });
-    }
-  }
+  const [contacts, setContacts] = useLocalStorage('contacts', initialContacts);
+  const [filter, setFilter] = useState('');
 
-  componentDidUpdate(prevProps, prevState) {
-    const { contacts } = this.state;
-    if (contacts !== prevState.contacts) {
-      localStorage.setItem('contacts', JSON.stringify(contacts));
-    }
-  };
 
-  handleSubmit = (name, number) => {
-    const { contacts } = this.state;
+  const handleSubmit = (name, number) => {
     const checkContact = contacts.some(
       contact => contact.name.toLowerCase() === name.toLowerCase()
     );
@@ -50,32 +37,26 @@ export class App extends Component {
     };
     return checkContact
       ? toast.warn(`${name} is already in contacts`, { theme: 'dark' })
-      : this.setState(prevState => ({
-          contacts: [newContact, ...prevState.contacts],
-        }));
+      : setContacts(prevState => [newContact, ...prevState]);
   };
 
-  handleDelete = id => {
-    this.setState(prevState => ({
-      contacts: prevState.contacts.filter(contact => contact.id !== id),
-    }));
+  const handleDelete = id => {
+    setContacts(contacts.filter(contact => contact.id !== id));
   };
 
-  initialiseFilter = event => {
-    const { name, value } = event.currentTarget;
-    this.setState({ [name]: value });
+  const initialiseFilter = event => {
+    setFilter(event.target.value);
   };
 
-  doFiltering = () => {
-    const { contacts, filter } = this.state;
+  const doFiltering = () => {
     const normalizedFilter = filter.toLowerCase();
     return contacts.filter(contact =>
       contact.name.toLowerCase().includes(normalizedFilter)
     );
   };
 
-  render() {
-    const { contacts, filter } = this.state;
+  
+    
     return (
       <div
         style={{
@@ -92,16 +73,13 @@ export class App extends Component {
       >
         <div>
           <MainTitle>Phonebook</MainTitle>
-          <ContactForm handleSubmit={this.handleSubmit} />
+          <ContactForm handleSubmit={handleSubmit} />
         </div>
         <ContactsTitle> Contacts</ContactsTitle>
         {contacts.length !== 0 ? (
           <>
-            <Filter filter={filter} initialiseFilter={this.initialiseFilter} />
-            <ContactList
-              contacts={this.doFiltering()}
-              handleDelete={this.handleDelete}
-            />
+            <Filter filter={filter} initialiseFilter={initialiseFilter} />
+            <ContactList contacts={doFiltering()} handleDelete={handleDelete} />
           </>
         ) : (
           <WarningMessage>
@@ -114,5 +92,5 @@ export class App extends Component {
         <ToastContainer autoClose={5000} />
       </div>
     );
-  }
+  
 };

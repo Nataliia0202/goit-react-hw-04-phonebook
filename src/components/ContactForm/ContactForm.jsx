@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import {
     ContactFormStyle,
@@ -8,37 +8,30 @@ import {
 } from 'components/ContactForm/ContactForm.styled';
 
 
-export class ContactForm extends Component {
-  static propTypes = {
-    handleSubmit: PropTypes.func.isRequired,
-  };
-  state = {
-    name: '',
-    number: '',
+export const ContactForm = ({handleSubmit}) => {
+  const [name, setName] = useState('');
+  const [number, setNumber] = useState('');
+
+  const handleChange = event => {
+    setName(event.target.value);
   };
 
-  handleChange = event => {
-    const { name, value } = event.currentTarget;
-    this.setState({ [name]: value });
+  const handleChangeNumber = event => {
+    setNumber(event.target.value);
   };
-  onSubmitForm = event => {
+
+  const onSubmitForm = event => {
     event.preventDefault();
-    const { handleSubmit } = this.props;
-    const { name, number } = this.state;
     handleSubmit(name, number);
-    this.reset();
+    reset();
   };
-  reset = () => {
-    this.setState({
-      name: '',
-      number: '',
-    });
+  const reset = () => {
+    setName('');
+    setNumber('');
   };
-
-  render() {
-    const { name, number } = this.state;
+    
     return (
-      <ContactFormStyle onSubmit={this.onSubmitForm}>
+      <ContactFormStyle onSubmit={onSubmitForm}>
         <LabelForm>Name</LabelForm>
         <InputForm
           type="text"
@@ -47,7 +40,7 @@ export class ContactForm extends Component {
           title="Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan"
           required
           value={name}
-          onChange={this.handleChange}
+          onChange={handleChange}
         />
         <LabelForm>Number</LabelForm>
         <InputForm
@@ -58,10 +51,14 @@ export class ContactForm extends Component {
           required
           placeholder="Enter phone number"
           value={number}
-          onChange={this.handleChange}
+          onChange={handleChangeNumber}
         />
         <ButtonForAdd type="submit">Add contact</ButtonForAdd>
       </ContactFormStyle>
     );
-  }
+  
 }
+
+ContactForm.propTypes = {
+    handleSubmit: PropTypes.func.isRequired,
+};
